@@ -23,5 +23,15 @@ pipeline {
             }
         }
 
+        stage('Run Tests') {
+    steps {
+        bat '''
+        echo Running automated test suite...
+
+        npm test
+        '''
+    }
+}
+        
     }
 }
