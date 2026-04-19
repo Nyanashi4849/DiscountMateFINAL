@@ -32,6 +32,17 @@ pipeline {
         '''
     }
 }
+        stage('Build Docker Image') {
+    steps {
+        bat '''
+        echo Building Docker image with versioning...
+
+        docker build -t discountmate-api:%BUILD_NUMBER% .
+
+        echo Build completed successfully
+        '''
+    }
+}
         
     }
 }
