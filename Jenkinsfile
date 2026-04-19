@@ -1,20 +1,20 @@
 stage('Build') {
     steps {
         script {
-            echo ' Cleaning workspace for fresh build...'
+            echo 'leaning workspace for fresh build...'
             cleanWs()
 
             echo ' Installing dependencies...'
             bat 'npm install'
 
-            echo 'Running build step (if available)...'
-            bat 'npm run build || echo "No build script found, skipping..."'
+            echo ' Running pre-build check...'
+            bat 'npm run build || echo "No build script found, continuing..."'
 
-            echo ' Building Docker image with version tag...'
+            echo ' Building Docker image (versioned)...'
             bat 'docker build -t discountmate-api:%BUILD_NUMBER% .'
 
             echo 'Saving Docker image as artifact...'
-            bat 'docker save discountmate-api:%BUILD_NUMBER% > discountmate-api.tar'
+            bat 'docker save discountmate-api:%BUILD_NUMBER% -o discountmate-api.tar'
 
             echo ' Build stage completed successfully'
         }
