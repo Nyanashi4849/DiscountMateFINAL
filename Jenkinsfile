@@ -6,7 +6,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Nyanashi4849/DiscountMateFINAL'
+                git 'https://github.com/Nyanashi4849/DiscountMateFINAL.git'
             }
         }
 
