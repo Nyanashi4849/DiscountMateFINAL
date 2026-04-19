@@ -5,10 +5,8 @@ const priceRoutes = require("./routes/priceRoutes");
 const alertRoutes = require("./routes/alertRoutes");
 const alertsRoutes = require("./routes/alerts");
 
-
 const app = express();
 
-app.use("/alerts", alertsRoutes);
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -18,9 +16,14 @@ app.get("/", (req, res) => {
 app.use("/products", productRoutes);
 app.use("/price", priceRoutes);
 app.use("/alerts", alertRoutes);
+app.use("/alerts", alertsRoutes);
 
-const PORT = 5000;
+// IMPORTANT: DO NOT BREAK TESTS OR POSTMAN
+if (require.main === module) {
+  const PORT = 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = app;
