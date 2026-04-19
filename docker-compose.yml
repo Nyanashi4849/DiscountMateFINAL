@@ -1,7 +1,6 @@
 services:
   db:
     image: postgres:15-alpine
-    container_name: discountmate_db
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -17,7 +16,7 @@ services:
     depends_on:
       - db
     ports:
-      - "5000:5000"
+      - "0:5000"
     environment:
       DB_HOST: db
       DB_USER: postgres
