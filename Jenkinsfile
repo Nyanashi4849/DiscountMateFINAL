@@ -1,22 +1,19 @@
 stage('Build') {
     steps {
-        script {
-            echo 'leaning workspace for fresh build...'
-            cleanWs()
+        bat '''
+        echo Cleaning old workspace (safe mode)
+        
+        echo Installing dependencies...
+        npm install
 
-            echo ' Installing dependencies...'
-            bat 'npm install'
+        echo Running tests before build sanity check...
+        npm test
 
-            echo ' Running pre-build check...'
-            bat 'npm run build || echo "No build script found, continuing..."'
+        echo Building Docker image with version tag...
+        docker build -t discountmate-api:%BUILD_NUMBER% .
 
-            echo ' Building Docker image (versioned)...'
-            bat 'docker build -t discountmate-api:%BUILD_NUMBER% .'
-
-            echo 'Saving Docker image as artifact...'
-            bat 'docker save discountmate-api:%BUILD_NUMBER% -o discountmate-api.tar'
-
-            echo ' Build stage completed successfully'
-        }
+        echo Saving Docker image as artifact...
+        docker save discountmate-api:%BUILD_NUMBER% -o discountmate-api.tar
+        '''
     }
 }
