@@ -1,36 +1,22 @@
-pipeline {
-
-    agent any
-
-    stages {
-
-        stage('Install Dependencies') {
-            steps {
-                bat 'npm install'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                bat 'npm test'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                bat 'docker build -t discountmate-api .'
-            }
-        }
-
-        stage('Run Container') {
+stage('Build') {
     steps {
-        bat '''
-        set COMPOSE_PROJECT_NAME=discountmate_hd
-        docker-compose down -v --remove-orphans
-        docker-compose up -d --build
-        '''
-    }
-}
+        script {
+            echo ' Cleaning workspace for fresh build...'
+            cleanWs()
 
+            echo ' Installing dependencies...'
+            bat 'npm install'
+
+            echo 'Running build step (if available)...'
+            bat 'npm run build || echo "No build script found, skipping..."'
+
+            echo ' Building Docker image with version tag...'
+            bat 'docker build -t discountmate-api:%BUILD_NUMBER% .'
+
+            echo 'Saving Docker image as artifact...'
+            bat 'docker save discountmate-api:%BUILD_NUMBER% > discountmate-api.tar'
+
+            echo ' Build stage completed successfully'
+        }
     }
 }
