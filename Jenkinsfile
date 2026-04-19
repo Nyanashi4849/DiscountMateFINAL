@@ -43,21 +43,19 @@ pipeline {
         '''
     }
 }
-       stage('Code Quality - SonarCloud') {
+      stage('Code Quality - SonarCloud') {
     steps {
         withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-            withSonarQubeEnv('sonar-scanner') {
-                bat '''
-                echo Running SonarCloud analysis...
+            bat '''
+            echo Running SonarCloud Analysis...
 
-                sonar-scanner ^
-                  -Dsonar.projectKey=Nyanashi4849_DiscountMateFINAL ^
-                  -Dsonar.organization=nyanashi4849 ^
-                  -Dsonar.sources=. ^
-                  -Dsonar.host.url=https://sonarcloud.io ^
-                  -Dsonar.login=%SONAR_TOKEN%
-                '''
-            }
+            sonar-scanner ^
+            -Dsonar.projectKey=Nyanashi4849_DiscountMateFINAL ^
+            -Dsonar.organization=nyanashi4849 ^
+            -Dsonar.sources=. ^
+            -Dsonar.host.url=https://sonarcloud.io ^
+            -Dsonar.login=%SONAR_TOKEN%
+            '''
         }
     }
 }
