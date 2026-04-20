@@ -83,7 +83,7 @@ stage('Security Scan - Snyk') {
         }
     }
 }
-     stage('Deploy') {
+    stage('Deploy') {
     steps {
         bat '''
         echo =====================================
@@ -118,17 +118,27 @@ stage('Security Scan - Snyk') {
         set RETRY=0
 
         :healthcheck
-        curl -f http://localhost:%PORT%/ > healthcheck.txt 2>nul
+
+        REM Try root endpoint first
+        curl -f http://localhost:%PORT%/ >nul 2>nul
 
         if %ERRORLEVEL%==0 (
             echo Service is healthy!
             goto success
         )
 
+        REM Optional fallback health endpoint (uncomment if you have /health)
+        REM curl -f http://localhost:%PORT%/health >nul 2>nul
+        REM if %ERRORLEVEL%==0 (
+        REM     echo Service is healthy via /health endpoint!
+        REM     goto success
+        REM )
+
         set /a RETRY+=1
         echo Health check failed. Attempt %RETRY% of 10...
 
-        timeout /t 3 >nul
+        REM FIX: Jenkins-safe sleep (replaces timeout)
+        ping 127.0.0.1 -n 4 >nul
 
         if %RETRY% LSS 10 goto healthcheck
 
@@ -139,6 +149,7 @@ stage('Security Scan - Snyk') {
         docker stop %CONTAINER_NAME%
         docker rm %CONTAINER_NAME%
 
+        echo Restarting last known image...
         docker run -d ^
         --name %CONTAINER_NAME% ^
         -p %PORT%:3000 ^
