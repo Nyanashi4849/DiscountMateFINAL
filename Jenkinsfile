@@ -83,7 +83,7 @@ stage('Security Scan - Snyk') {
         }
     }
 }
-      stage('Deploy') {
+     stage('Deploy') {
     steps {
         bat '''
         echo =====================================
@@ -154,6 +154,5 @@ stage('Security Scan - Snyk') {
         '''
     }
 }
-        
     }
 }
