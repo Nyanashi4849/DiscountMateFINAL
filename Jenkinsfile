@@ -74,14 +74,14 @@ stage('Security Scan - Snyk') {
                 echo Authenticating Snyk...
                 snyk auth %SNYK_TOKEN%
 
-                echo Testing project dependencies...
+                echo Testing dependencies...
                 snyk test --severity-threshold=high
 
-                echo Testing Docker image (optional but powerful)...
-                snyk container test discountmate-api:23 --severity-threshold=high || exit 1
+                echo Testing Docker image...
+                snyk container test discountmate-api:%BUILD_NUMBER% --severity-threshold=high || exit 1
             '''
         }
     }
-}       
+}
     }
 }
