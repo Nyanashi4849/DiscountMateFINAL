@@ -165,7 +165,11 @@ stage('Security Scan - Snyk') {
         '''
     }
 }
-    echo =====================================
+  stage('Release') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+            bat '''
+               echo =====================================
 echo RELEASE STAGE STARTING
 echo =====================================
 
@@ -198,5 +202,8 @@ if %ERRORLEVEL% NEQ 0 (
 echo =====================================
 echo RELEASE COMPLETED SUCCESSFULLY
 echo =====================================
+        }
+    }
+}
     }
 }
