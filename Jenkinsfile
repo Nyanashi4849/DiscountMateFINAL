@@ -165,49 +165,51 @@ stage('Security Scan - Snyk') {
         '''
     }
 }
-        stage('Release') {
+       stage('Release') {
     steps {
-        bat '''
-        echo =====================================
-        echo RELEASE STAGE STARTING
-        echo =====================================
+        withCredentials([usernamePassword(
+            credentialsId: 'github-creds',
+            usernameVariable: 'GIT_USER',
+            passwordVariable: 'GIT_PASS'
+        )]) {
+            bat '''
+            echo =====================================
+            echo RELEASE STAGE STARTING
+            echo =====================================
 
-        set IMAGE=discountmate-api:%BUILD_NUMBER%
+            set IMAGE=discountmate-api:%BUILD_NUMBER%
 
-        echo Tagging Git release...
-        git config user.email "jenkins@ci.com"
-        git config user.name "Jenkins CI"
+            echo Configuring Git identity...
+            git config user.email "jenkins@ci.com"
+            git config user.name "Jenkins CI"
 
-        git tag -a v%BUILD_NUMBER% -m "Release version %BUILD_NUMBER%"
-        git push origin v%BUILD_NUMBER%
+            echo Fetching latest tags...
+            git fetch --tags
 
-        echo Tag created: v%BUILD_NUMBER%
+            echo Creating Git tag...
+            git tag -a v%BUILD_NUMBER% -m "Release version %BUILD_NUMBER%"
 
-        echo =====================================
-        echo BUILD RELEASE METADATA
-        echo =====================================
+            echo Pushing tag to GitHub...
+            git push https://%GIT_USER%:%GIT_PASS%@github.com/Nyanashi4849/DiscountMateFINAL.git v%BUILD_NUMBER%
 
-        echo {
-          "version": "%BUILD_NUMBER%",
-          "image": "%IMAGE%",
-          "status": "released",
-          "timestamp": "%DATE% %TIME%"
-        } > release.json
+            echo =====================================
+            echo RELEASE METADATA GENERATION
+            echo =====================================
 
-        echo Release metadata created
+            echo {
+              "version": "%BUILD_NUMBER%",
+              "image": "%IMAGE%",
+              "status": "released",
+              "timestamp": "%DATE% %TIME%"
+            } > release.json
 
-        echo =====================================
-        echo (OPTIONAL) PUSH DOCKER IMAGE
-        echo =====================================
+            echo Release metadata saved
 
-        REM docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-        REM docker tag discountmate-api:%BUILD_NUMBER% yourrepo/discountmate-api:%BUILD_NUMBER%
-        REM docker push yourrepo/discountmate-api:%BUILD_NUMBER%
-
-        echo =====================================
-        echo RELEASE COMPLETE
-        echo =====================================
-        '''
+            echo =====================================
+            echo RELEASE COMPLETED SUCCESSFULLY
+            echo =====================================
+            '''
+        }
     }
 }
     }
