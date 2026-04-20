@@ -90,7 +90,8 @@ stage('Security Scan - Snyk') {
         echo DEPLOYMENT STARTING (PRODUCTION STYLE)
         echo =====================================
 
-        set IMAGE=discountmate-api:36
+       set IMAGE=discountmate-api:%BUILD_NUMBER%
+       set TAG=v%BUILD_NUMBER%
         set CONTAINER_NAME=discountmate-api
         set PORT=5000
         set MAX_RETRIES=15
@@ -190,7 +191,7 @@ stage('Security Scan - Snyk') {
             git tag -a %TAG% -m "Release version %TAG%"
 
             echo Pushing tag to GitHub...
-
+            git push origin :refs/tags/%TAG%
             git push https://Nyanashi4849:%GIT_PASS%@github.com/Nyanashi4849/DiscountMateFINAL.git %TAG%
 
             IF %ERRORLEVEL% NEQ 0 (
