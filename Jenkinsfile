@@ -66,7 +66,7 @@ pipeline {
       
 stage('Security Scan - Snyk') {
     steps {
-        withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
+        withCredentials([string(credentialsId: 'synk-token', variable: 'SNYK_TOKEN')]) {
             bat '''
                 echo Installing Snyk CLI...
                 npm install -g snyk
