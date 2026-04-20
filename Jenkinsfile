@@ -112,7 +112,7 @@ stage('Security Scan - Snyk') {
 
         docker run -d ^
             --name %CONTAINER_NAME% ^
-            -p %PORT%:3000 ^
+            -p %PORT%:5000 ^
             --restart unless-stopped ^
             %IMAGE%
 
@@ -157,7 +157,7 @@ stage('Security Scan - Snyk') {
 
         docker run -d ^
             --name %CONTAINER_NAME% ^
-            -p %PORT%:3000 ^
+            -p %PORT%:5000 ^
             --restart unless-stopped ^
             %IMAGE%
 
