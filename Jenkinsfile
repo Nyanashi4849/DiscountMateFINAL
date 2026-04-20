@@ -165,45 +165,61 @@ stage('Security Scan - Snyk') {
         '''
     }
 }
-  stage('Release') {
+          stage('Release') {
     steps {
-        withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-            bat '''
-               echo =====================================
-echo RELEASE STAGE STARTING
-echo =====================================
+        withCredentials([string(credentialsId: 'github-token', variable: 'GIT_PASS')]) {
+            bat """
+            echo =====================================
+            echo RELEASE STAGE STARTING
+            echo =====================================
 
-set IMAGE=discountmate-api:40
-set TAG=v40
+            set IMAGE=discountmate-api:40
+            set TAG=v40
 
-git config user.email "jenkins@ci.com"
-git config user.name "Jenkins CI"
+            echo Configuring Git identity...
+            git config user.email "jenkins@ci.com"
+            git config user.name "Jenkins CI"
 
-echo Fetching tags...
-git fetch --tags
+            echo Fetching latest tags...
+            git fetch --tags origin
 
-echo Checking if tag exists locally...
-git tag -d %TAG% 2>nul
+            echo Checking if tag already exists locally...
+            git tag -d %TAG% 2>nul
 
-echo Creating tag...
-git tag -a %TAG% -m "Release version 40"
+            echo Creating Git tag...
+            git tag -a %TAG% -m "Release version %TAG%"
 
-echo Checking remote tags...
-git ls-remote --tags origin
+            echo Pushing tag to GitHub...
 
-echo Pushing tag...
-git push origin %TAG%
+            git push https://Nyanashi4849:%GIT_PASS%@github.com/Nyanashi4849/DiscountMateFINAL.git %TAG%
 
-if %ERRORLEVEL% NEQ 0 (
-  echo FAILED: Git push tag failed
-  exit /b 1
-)
+            IF %ERRORLEVEL% NEQ 0 (
+                echo ERROR: Git push failed
+                exit /b 1
+            )
 
-echo =====================================
-echo RELEASE COMPLETED SUCCESSFULLY
-echo =====================================
+            echo =====================================
+            echo RELEASE METADATA GENERATION
+            echo =====================================
+
+            (
+                echo {
+                echo   "version": "%TAG%",
+                echo   "image": "%IMAGE%",
+                echo   "status": "released",
+                echo   "timestamp": "%DATE% %TIME%"
+                echo }
+            ) > release.json
+
+            echo Release metadata saved
+
+            echo =====================================
+            echo RELEASE COMPLETED SUCCESSFULLY
+            echo =====================================
+            """
         }
     }
 }
+        
     }
 }
