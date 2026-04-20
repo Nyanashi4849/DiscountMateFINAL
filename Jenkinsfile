@@ -87,55 +87,67 @@ stage('Security Scan - Snyk') {
     steps {
         bat '''
         echo =====================================
-        echo DEPLOYMENT STARTING
+        echo DEPLOYMENT STARTING (PRODUCTION STYLE)
         echo =====================================
 
         set IMAGE=discountmate-api:%BUILD_NUMBER%
+        set CONTAINER_NAME=discountmate-api
+        set PORT=3000
 
         echo Checking existing container...
-
-        docker ps -a -q -f name=discountmate-api > container.txt
+        docker ps -a -q -f name=%CONTAINER_NAME% > container.txt
         set /p OLD_CONTAINER=<container.txt
 
         if not "%OLD_CONTAINER%"=="" (
-            echo Stopping old container...
-            docker stop discountmate-api
-            docker rm discountmate-api
+            echo Stopping and removing old container...
+            docker stop %CONTAINER_NAME%
+            docker rm %CONTAINER_NAME%
         ) else (
             echo No existing container found.
         )
 
-        echo Running new container...
+        echo Starting new container...
         docker run -d ^
-        --name discountmate-api ^
-        -p 3000:3000 ^
+        --name %CONTAINER_NAME% ^
+        -p %PORT%:3000 ^
         --restart unless-stopped ^
         %IMAGE%
 
-        echo Waiting for service startup...
-        timeout /t 10
+        echo Waiting for service to become healthy...
 
-        echo Running health check...
+        set RETRY=0
 
-        curl http://localhost:5000/ > healthcheck.txt
+        :healthcheck
+        curl -f http://localhost:%PORT%/ > healthcheck.txt 2>nul
 
-        if %ERRORLEVEL% NEQ 0 (
-            echo =====================================
-            echo DEPLOY FAILED - ROLLING BACK
-            echo =====================================
-
-            docker stop discountmate-api
-            docker rm discountmate-api
-
-            docker run -d ^
-            --name discountmate-api ^
-            -p 3000:3000 ^
-            --restart unless-stopped ^
-            %IMAGE%
-
-            exit /b 1
+        if %ERRORLEVEL%==0 (
+            echo Service is healthy!
+            goto success
         )
 
+        set /a RETRY+=1
+        echo Health check failed. Attempt %RETRY% of 10...
+
+        timeout /t 3 >nul
+
+        if %RETRY% LSS 10 goto healthcheck
+
+        echo =====================================
+        echo DEPLOY FAILED - ROLLING BACK
+        echo =====================================
+
+        docker stop %CONTAINER_NAME%
+        docker rm %CONTAINER_NAME%
+
+        docker run -d ^
+        --name %CONTAINER_NAME% ^
+        -p %PORT%:3000 ^
+        --restart unless-stopped ^
+        %IMAGE%
+
+        exit /b 1
+
+        :success
         echo =====================================
         echo DEPLOYMENT SUCCESSFUL
         echo =====================================
