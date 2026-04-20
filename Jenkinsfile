@@ -90,11 +90,13 @@ stage('Security Scan - Snyk') {
         echo DEPLOYMENT STARTING (PRODUCTION STYLE)
         echo =====================================
 
-        set IMAGE=discountmate-api:%BUILD_NUMBER%
+        set IMAGE=discountmate-api:36
         set CONTAINER_NAME=discountmate-api
         set PORT=5000
+        set MAX_RETRIES=15
 
         echo Checking existing container...
+
         docker ps -a -q -f name=%CONTAINER_NAME% > container.txt
         set /p OLD_CONTAINER=<container.txt
 
@@ -107,41 +109,43 @@ stage('Security Scan - Snyk') {
         )
 
         echo Starting new container...
-        docker run -d ^
-        --name %CONTAINER_NAME% ^
-        -p %PORT%:3000 ^
-        --restart unless-stopped ^
-        %IMAGE%
 
-        echo Waiting for service to become healthy...
+        docker run -d ^
+            --name %CONTAINER_NAME% ^
+            -p %PORT%:3000 ^
+            --restart unless-stopped ^
+            %IMAGE%
+
+        echo Waiting for container startup...
+
+        timeout /t 5 /nobreak >nul
 
         set RETRY=0
 
         :healthcheck
+        echo Checking service health (attempt %RETRY%/%MAX_RETRIES%)...
 
-        REM Try root endpoint first
         curl -f http://localhost:%PORT%/ >nul 2>nul
 
-        if %ERRORLEVEL%==0 (
-            echo Service is healthy!
-            goto success
+        if %ERRORLEVEL% EQU 0 (
+            echo =====================================
+            echo SERVICE IS HEALTHY - DEPLOY SUCCESS
+            echo =====================================
+            exit /b 0
         )
 
-        REM Optional fallback health endpoint (uncomment if you have /health)
-        REM curl -f http://localhost:%PORT%/health >nul 2>nul
-        REM if %ERRORLEVEL%==0 (
-        REM     echo Service is healthy via /health endpoint!
-        REM     goto success
-        REM )
+        echo Health check failed...
+
+        docker logs --tail 20 %CONTAINER_NAME%
 
         set /a RETRY+=1
-        echo Health check failed. Attempt %RETRY% of 10...
 
-        REM FIX: Jenkins-safe sleep (replaces timeout)
-        ping 127.0.0.1 -n 4 >nul
+        if %RETRY% GEQ %MAX_RETRIES% goto fail
 
-        if %RETRY% LSS 10 goto healthcheck
+        timeout /t 3 /nobreak >nul
+        goto healthcheck
 
+        :fail
         echo =====================================
         echo DEPLOY FAILED - ROLLING BACK
         echo =====================================
@@ -150,18 +154,14 @@ stage('Security Scan - Snyk') {
         docker rm %CONTAINER_NAME%
 
         echo Restarting last known image...
+
         docker run -d ^
-        --name %CONTAINER_NAME% ^
-        -p %PORT%:3000 ^
-        --restart unless-stopped ^
-        %IMAGE%
+            --name %CONTAINER_NAME% ^
+            -p %PORT%:3000 ^
+            --restart unless-stopped ^
+            %IMAGE%
 
         exit /b 1
-
-        :success
-        echo =====================================
-        echo DEPLOYMENT SUCCESSFUL
-        echo =====================================
         '''
     }
 }
