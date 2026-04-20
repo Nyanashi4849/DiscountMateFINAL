@@ -220,6 +220,43 @@ stage('Security Scan - Snyk') {
         }
     }
 }
+        stage('Monitoring') {
+    steps {
+        bat '''
+        echo =====================================
+        echo MONITORING STAGE STARTED
+        echo =====================================
+
+        set URL=http://localhost:5000
+        set MAX=5
+        set COUNT=0
+
+        :monitor_loop
+
+        echo Checking service health...
+
+        curl -f %URL%/health >nul 2>nul
+
+        if %ERRORLEVEL% EQU 0 (
+            echo SERVICE IS HEALTHY ✔
+        ) else (
+            echo WARNING: Service not responding ⚠
+        )
+
+        set /a COUNT+=1
+
+        if %COUNT% GEQ %MAX% goto end
+
+        timeout /t 5 >nul
+        goto monitor_loop
+
+        :end
+        echo =====================================
+        echo MONITORING COMPLETED
+        echo =====================================
+        '''
+    }
+}
         
     }
 }
