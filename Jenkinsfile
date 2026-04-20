@@ -92,7 +92,7 @@ stage('Security Scan - Snyk') {
 
         set IMAGE=discountmate-api:%BUILD_NUMBER%
         set CONTAINER_NAME=discountmate-api
-        set PORT=3000
+        set PORT=5000
 
         echo Checking existing container...
         docker ps -a -q -f name=%CONTAINER_NAME% > container.txt
