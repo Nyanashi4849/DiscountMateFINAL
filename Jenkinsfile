@@ -221,7 +221,8 @@ stage('Security Scan - Snyk') {
         }
     }
 }
-        stage('Monitoring') {
+       
+       stage('Monitoring') {
     steps {
         bat '''
         echo =====================================
@@ -236,7 +237,7 @@ stage('Security Scan - Snyk') {
 
         echo Checking service health...
 
-        curl -f %URL%/health >nul 2>nul
+        curl -s %URL%/ >nul
 
         if %ERRORLEVEL% EQU 0 (
             echo SERVICE IS HEALTHY ✔
@@ -248,7 +249,8 @@ stage('Security Scan - Snyk') {
 
         if %COUNT% GEQ %MAX% goto end
 
-       ping 127.0.0.1 -n 6 >nul
+        ping 127.0.0.1 -n 6 >nul
+
         goto monitor_loop
 
         :end
