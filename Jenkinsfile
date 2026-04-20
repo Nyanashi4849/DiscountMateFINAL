@@ -165,49 +165,37 @@ stage('Security Scan - Snyk') {
         '''
     }
 }
-       stage('Release') {
+     stage('Release') {
     steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'github-creds',
-            usernameVariable: 'GIT_USER',
-            passwordVariable: 'GIT_PASS'
-        )]) {
+        withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
             bat '''
-            echo =====================================
-            echo RELEASE STAGE STARTING
-            echo =====================================
+                echo =====================================
+                echo RELEASE STAGE STARTING
+                echo =====================================
 
-            set IMAGE=discountmate-api:%BUILD_NUMBER%
+                git config user.email "jenkins@ci.com"
+                git config user.name "Jenkins CI"
 
-            echo Configuring Git identity...
-            git config user.email "jenkins@ci.com"
-            git config user.name "Jenkins CI"
+                echo Fetching latest tags...
+                git fetch --tags
 
-            echo Fetching latest tags...
-            git fetch --tags
+                echo Creating tag...
+                set TAG=v%BUILD_NUMBER%
+                git tag -a %TAG% -m "Release version %BUILD_NUMBER%"
 
-            echo Creating Git tag...
-            git tag -a v%BUILD_NUMBER% -m "Release version %BUILD_NUMBER%"
+                echo Pushing tag using PAT...
 
-            echo Pushing tag to GitHub...
-            git push https://%GIT_USER%:%GIT_PASS%@github.com/Nyanashi4849/DiscountMateFINAL.git v%BUILD_NUMBER%
+                git push https://%GIT_USER%:%GIT_PASS%@github.com/Nyanashi4849/DiscountMateFINAL.git %TAG%
 
-            echo =====================================
-            echo RELEASE METADATA GENERATION
-            echo =====================================
+                echo Writing release metadata...
+                echo { > release.json
+                echo   "version": "%BUILD_NUMBER%", >> release.json
+                echo   "image": "discountmate-api:%BUILD_NUMBER%", >> release.json
+                echo   "status": "released", >> release.json
+                echo   "timestamp": "%DATE% %TIME%" >> release.json
+                echo } >> release.json
 
-            echo {
-              "version": "%BUILD_NUMBER%",
-              "image": "%IMAGE%",
-              "status": "released",
-              "timestamp": "%DATE% %TIME%"
-            } > release.json
-
-            echo Release metadata saved
-
-            echo =====================================
-            echo RELEASE COMPLETED SUCCESSFULLY
-            echo =====================================
+                echo Release completed successfully
             '''
         }
     }
