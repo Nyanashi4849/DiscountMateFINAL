@@ -165,5 +165,50 @@ stage('Security Scan - Snyk') {
         '''
     }
 }
+        stage('Release') {
+    steps {
+        bat '''
+        echo =====================================
+        echo RELEASE STAGE STARTING
+        echo =====================================
+
+        set IMAGE=discountmate-api:%BUILD_NUMBER%
+
+        echo Tagging Git release...
+        git config user.email "jenkins@ci.com"
+        git config user.name "Jenkins CI"
+
+        git tag -a v%BUILD_NUMBER% -m "Release version %BUILD_NUMBER%"
+        git push origin v%BUILD_NUMBER%
+
+        echo Tag created: v%BUILD_NUMBER%
+
+        echo =====================================
+        echo BUILD RELEASE METADATA
+        echo =====================================
+
+        echo {
+          "version": "%BUILD_NUMBER%",
+          "image": "%IMAGE%",
+          "status": "released",
+          "timestamp": "%DATE% %TIME%"
+        } > release.json
+
+        echo Release metadata created
+
+        echo =====================================
+        echo (OPTIONAL) PUSH DOCKER IMAGE
+        echo =====================================
+
+        REM docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+        REM docker tag discountmate-api:%BUILD_NUMBER% yourrepo/discountmate-api:%BUILD_NUMBER%
+        REM docker push yourrepo/discountmate-api:%BUILD_NUMBER%
+
+        echo =====================================
+        echo RELEASE COMPLETE
+        echo =====================================
+        '''
+    }
+}
     }
 }
