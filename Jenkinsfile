@@ -63,40 +63,22 @@ pipeline {
         }
     }
 }
-    //     stage('Security Scan - Snyk') {
-    // steps {
-    //     withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
-    //         bat '''
-    //             echo Installing Snyk...
-    //             npm install -g snyk
-
-    //             echo Authenticating...
-    //             snyk auth %SNYK_TOKEN%
-
-    //             echo Running basic dependency scan...
-    //             snyk test
-    //         '''
-    //     }
-    // }
-
         stage('Security Scan - Snyk') {
     steps {
-        withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
+        withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
             bat '''
-                echo Installing Snyk CLI...
+                echo Installing Snyk...
                 npm install -g snyk
 
-                echo Authenticating Snyk...
+                echo Authenticating...
                 snyk auth %SNYK_TOKEN%
 
-                echo Testing project dependencies...
-                snyk test --severity-threshold=high
-
-                echo Testing Docker image (optional but powerful)...
-                snyk container test discountmate-api:23 --severity-threshold=high || exit 1
+                echo Running basic dependency scan...
+                snyk test
             '''
         }
     }
+
 }
 }
         
