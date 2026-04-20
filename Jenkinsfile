@@ -165,40 +165,38 @@ stage('Security Scan - Snyk') {
         '''
     }
 }
-     stage('Release') {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-            bat '''
-                echo =====================================
-                echo RELEASE STAGE STARTING
-                echo =====================================
+    echo =====================================
+echo RELEASE STAGE STARTING
+echo =====================================
 
-                git config user.email "jenkins@ci.com"
-                git config user.name "Jenkins CI"
+set IMAGE=discountmate-api:40
+set TAG=v40
 
-                echo Fetching latest tags...
-                git fetch --tags
+git config user.email "jenkins@ci.com"
+git config user.name "Jenkins CI"
 
-                echo Creating tag...
-                set TAG=v%BUILD_NUMBER%
-                git tag -a %TAG% -m "Release version %BUILD_NUMBER%"
+echo Fetching tags...
+git fetch --tags
 
-                echo Pushing tag using PAT...
+echo Checking if tag exists locally...
+git tag -d %TAG% 2>nul
 
-                git push https://%GIT_USER%:%GIT_PASS%@github.com/Nyanashi4849/DiscountMateFINAL.git %TAG%
+echo Creating tag...
+git tag -a %TAG% -m "Release version 40"
 
-                echo Writing release metadata...
-                echo { > release.json
-                echo   "version": "%BUILD_NUMBER%", >> release.json
-                echo   "image": "discountmate-api:%BUILD_NUMBER%", >> release.json
-                echo   "status": "released", >> release.json
-                echo   "timestamp": "%DATE% %TIME%" >> release.json
-                echo } >> release.json
+echo Checking remote tags...
+git ls-remote --tags origin
 
-                echo Release completed successfully
-            '''
-        }
-    }
-}
+echo Pushing tag...
+git push origin %TAG%
+
+if %ERRORLEVEL% NEQ 0 (
+  echo FAILED: Git push tag failed
+  exit /b 1
+)
+
+echo =====================================
+echo RELEASE COMPLETED SUCCESSFULLY
+echo =====================================
     }
 }
