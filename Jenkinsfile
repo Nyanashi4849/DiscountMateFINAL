@@ -83,5 +83,65 @@ stage('Security Scan - Snyk') {
         }
     }
 }
+      stage('Deploy') {
+    steps {
+        bat '''
+        echo =====================================
+        echo DEPLOYMENT STARTING
+        echo =====================================
+
+        set IMAGE=discountmate-api:%BUILD_NUMBER%
+
+        echo Checking existing container...
+
+        docker ps -a -q -f name=discountmate-api > container.txt
+        set /p OLD_CONTAINER=<container.txt
+
+        if not "%OLD_CONTAINER%"=="" (
+            echo Stopping old container...
+            docker stop discountmate-api
+            docker rm discountmate-api
+        ) else (
+            echo No existing container found.
+        )
+
+        echo Running new container...
+        docker run -d ^
+        --name discountmate-api ^
+        -p 3000:3000 ^
+        --restart unless-stopped ^
+        %IMAGE%
+
+        echo Waiting for service startup...
+        timeout /t 10
+
+        echo Running health check...
+
+        curl http://localhost:5000/ > healthcheck.txt
+
+        if %ERRORLEVEL% NEQ 0 (
+            echo =====================================
+            echo DEPLOY FAILED - ROLLING BACK
+            echo =====================================
+
+            docker stop discountmate-api
+            docker rm discountmate-api
+
+            docker run -d ^
+            --name discountmate-api ^
+            -p 3000:3000 ^
+            --restart unless-stopped ^
+            %IMAGE%
+
+            exit /b 1
+        )
+
+        echo =====================================
+        echo DEPLOYMENT SUCCESSFUL
+        echo =====================================
+        '''
+    }
+}
+        
     }
 }
