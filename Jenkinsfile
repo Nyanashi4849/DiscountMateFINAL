@@ -167,7 +167,7 @@ stage('Security Scan - Snyk') {
 }
      stage('Release') {
     steps {
-        withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+        withCredentials([usernamePassword(credentialsId: 'git-token', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
             bat '''
                 echo =====================================
                 echo RELEASE STAGE STARTING
