@@ -143,7 +143,7 @@ stage('Security Scan - Snyk') {
 
         if %RETRY% GEQ %MAX_RETRIES% goto fail
 
-        timeout /t 3 /nobreak >nul
+        ping 127.0.0.1 -n 6 >nul
         goto healthcheck
 
         :fail
@@ -248,7 +248,7 @@ stage('Security Scan - Snyk') {
 
         if %COUNT% GEQ %MAX% goto end
 
-        timeout /t 5 >nul
+       ping 127.0.0.1 -n 6 >nul
         goto monitor_loop
 
         :end
