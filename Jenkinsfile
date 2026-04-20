@@ -63,6 +63,22 @@ pipeline {
         }
     }
 }
+        stage('Security Scan - Snyk') {
+    steps {
+        withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+            bat '''
+                echo Installing Snyk...
+                npm install -g snyk
+
+                echo Authenticating...
+                snyk auth %SNYK_TOKEN%
+
+                echo Running basic dependency scan...
+                snyk test
+            '''
+        }
+    }
+}
         
     }
 }
