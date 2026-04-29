@@ -6,8 +6,7 @@ pipeline {
         stage('Build') {
             steps {
                 bat '''
-                echo Cleaning workspace...
-                
+              
                 echo Installing dependencies...
                 npm install
 
