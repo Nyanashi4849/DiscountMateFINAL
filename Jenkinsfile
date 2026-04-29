@@ -11,12 +11,6 @@ pipeline {
                 echo Installing dependencies...
                 npm install
 
-                echo Building Docker image...
-                docker build -t discountmate-api:%BUILD_NUMBER% .
-
-                echo Saving image artifact...
-                docker save discountmate-api:%BUILD_NUMBER% -o discountmate-api.tar
-                '''
             }
         }
 
