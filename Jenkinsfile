@@ -77,9 +77,9 @@ stage('Security Scan - Snyk') {
     stage('Deploy') {
     steps {
         bat '''
-        echo =====================================
+        echo 
         echo DEPLOYMENT STARTING (PRODUCTION STYLE)
-        echo =====================================
+        echo 
 
        set IMAGE=discountmate-api:%BUILD_NUMBER%
        set TAG=v%BUILD_NUMBER%
@@ -120,9 +120,9 @@ stage('Security Scan - Snyk') {
         curl -f http://localhost:%PORT%/ >nul 2>nul
 
         if %ERRORLEVEL% EQU 0 (
-            echo =====================================
+            echo 
             echo SERVICE IS HEALTHY - DEPLOY SUCCESS
-            echo =====================================
+            echo 
             exit /b 0
         )
 
@@ -138,9 +138,9 @@ stage('Security Scan - Snyk') {
         goto healthcheck
 
         :fail
-        echo =====================================
+        echo 
         echo DEPLOY FAILED - ROLLING BACK
-        echo =====================================
+        echo 
 
         docker stop %CONTAINER_NAME%
         docker rm %CONTAINER_NAME%
@@ -161,9 +161,9 @@ stage('Security Scan - Snyk') {
     steps {
         withCredentials([string(credentialsId: 'github-creds', variable: 'GIT_PASS')]) {
             bat """
-            echo =====================================
+            echo
             echo RELEASE STAGE STARTING
-            echo =====================================
+            echo 
 
             set IMAGE=discountmate-api:40
             set TAG=v40
@@ -190,9 +190,9 @@ stage('Security Scan - Snyk') {
                 exit /b 1
             )
 
-            echo =====================================
+            echo 
             echo RELEASE METADATA GENERATION
-            echo =====================================
+            echo 
 
             (
                 echo {
@@ -205,9 +205,9 @@ stage('Security Scan - Snyk') {
 
             echo Release metadata saved
 
-            echo =====================================
+            echo 
             echo RELEASE COMPLETED SUCCESSFULLY
-            echo =====================================
+            echo 
             """
         }
     }
@@ -216,9 +216,9 @@ stage('Security Scan - Snyk') {
        stage('Monitoring') {
     steps {
         bat '''
-        echo =====================================
+        echo 
         echo MONITORING STAGE STARTED
-        echo =====================================
+        echo 
 
         set URL=http://localhost:5000
         set MAX=5
@@ -245,9 +245,9 @@ stage('Security Scan - Snyk') {
         goto monitor_loop
 
         :end
-        echo =====================================
+        echo
         echo MONITORING COMPLETED
-        echo =====================================
+        echo 
         '''
     }
 }
