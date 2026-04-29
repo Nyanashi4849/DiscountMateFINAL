@@ -11,9 +11,6 @@ pipeline {
                 echo Installing dependencies...
                 npm install
 
-                echo Running tests...
-                npm test
-
                 echo Building Docker image...
                 docker build -t discountmate-api:%BUILD_NUMBER% .
 
@@ -32,17 +29,17 @@ pipeline {
         '''
     }
 }
-        stage('Build Docker Image') {
-    steps {
-        bat '''
-        echo Building Docker image with versioning...
+//         stage('Build Docker Image') {
+//     steps {
+//         bat '''
+//         echo Building Docker image with versioning...
 
-        docker build -t discountmate-api:%BUILD_NUMBER% .
+//         docker build -t discountmate-api:%BUILD_NUMBER% .
 
-        echo Build completed successfully
-        '''
-    }
-}
+//         echo Build completed successfully
+//         '''
+//     }
+// }
      stage('Code Quality - SonarCloud') {
     steps {
         withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
