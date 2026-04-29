@@ -1,20 +1,16 @@
 pipeline {
     agent any
 
-    stages {
-
-        stage('Build') {
-            steps {
-                bat '''
-                echo Cleaning workspace...
-                
-                echo Installing dependencies...
-                npm install
-
-                ...
-
-            }
-        }
+    stage('Build') {
+    steps {
+        bat '''
+        echo Cleaning workspace...
+        
+        echo Installing dependencies...
+        npm install
+        '''
+    }
+}
 
         stage('Run Tests') {
     steps {
